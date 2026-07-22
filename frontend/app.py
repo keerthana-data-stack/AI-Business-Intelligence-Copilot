@@ -1,5 +1,11 @@
 import streamlit as st
 
+from backend.data_loader import load_dataset
+from backend.data_cleaner import analyze_dataset
+from backend.profiler import profile_dataset
+
+from frontend.dashboard import render_dashboard
+from frontend.upload import render_upload_page
 # -------------------------
 # PAGE CONFIG
 # -------------------------
@@ -39,45 +45,70 @@ st.title("📊 AI Business Intelligence Copilot")
 st.caption("Your AI-powered business analytics assistant")
 
 st.divider()
+# -------------------------
+# FILE UPLOAD
+# -------------------------
 
+uploaded_file = st.file_uploader(
+    "Upload CSV or Excel",
+    type=["csv", "xlsx"]
+)
+
+# Initialize variables
+df = None
+summary = None
+profile = None
+
+# Load and analyze dataset only if a file is uploaded
+if uploaded_file is not None:
+
+    df = load_dataset(uploaded_file)
+
+    if df is not None:
+        summary = analyze_dataset(df)
+        profile = profile_dataset(df)
 # -------------------------
 # KPI CARDS
 # -------------------------
 
 col1, col2, col3, col4 = st.columns(4)
 
+rows = summary["rows"] if summary else 0
+columns = summary["columns"] if summary else 0
+missing = summary["missing"] if summary else 0
+
 with col1:
-    st.metric("Datasets", "0")
+    st.metric("Datasets", 1 if df is not None else 0)
 
 with col2:
-    st.metric("Rows", "0")
+    st.metric("Rows", f"{rows:,}")
 
 with col3:
-    st.metric("Columns", "0")
+    st.metric("Columns", columns)
 
 with col4:
-    st.metric("Missing Values", "0")
+    st.metric("Missing Values", missing)
 
 st.divider()
 
 # -------------------------
-# PLACEHOLDERS
+# PAGE ROUTING
 # -------------------------
 
-left, right = st.columns([2,1])
+if page == "Dashboard":
+    render_dashboard(df, profile)
 
-with left:
+elif page == "Upload Data":
+    render_upload_page(df, summary, profile)
 
-    st.subheader("📈 Business Dashboard")
+elif page == "AI Assistant":
+    st.header("🤖 AI Assistant")
+    st.info("Coming soon...")
 
-    st.info("Charts will appear here.")
+elif page == "Forecasting":
+    st.header("📈 Forecasting")
+    st.info("Coming soon...")
 
-with right:
-
-    st.subheader("🤖 AI Insights")
-
-    st.info("AI-generated insights will appear here.")
-
-st.divider()
-
-st.success("Dashboard Loaded Successfully 🚀")
+elif page == "Settings":
+    st.header("⚙️ Settings")
+    st.info("Coming soon...")
