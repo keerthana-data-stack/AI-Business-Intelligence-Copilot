@@ -5,6 +5,7 @@ from backend.data_cleaner import analyze_dataset
 from backend.profiler import profile_dataset
 from backend.filters import apply_filters
 from backend.metrics import generate_kpis
+from backend.quality import calculate_quality_score
 
 from frontend.dashboard import render_dashboard
 from frontend.upload import render_upload_page
@@ -65,6 +66,7 @@ profile = None
 if uploaded_file is not None:
 
     df = load_dataset(uploaded_file)
+    original_df = df.copy()
 
     if df is not None:
         summary = analyze_dataset(df)
@@ -97,6 +99,37 @@ if uploaded_file is not None:
         st.sidebar.metric(
             "Rows after filtering",
             len(df)
+        )
+
+    quality = calculate_quality_score(original_df)
+    st.subheader("🛡️ Data Quality")
+
+    score = quality["score"]
+
+    if score >= 90:
+        color = "🟢"
+    elif score >= 70:
+        color = "🟡"
+    else:
+        color = "🔴"
+
+    st.metric(
+        label="Data Quality Score",
+        value=f"{color} {score}/100"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Missing %",
+            f"{quality['missing_percent']}%"
+        )
+
+    with col2:
+        st.metric(
+            "Duplicate %",
+            f"{quality['duplicate_percent']}%"
         )
 # -------------------------
 # Dataset Overview
