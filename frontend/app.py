@@ -4,6 +4,7 @@ from backend.data_loader import load_dataset
 from backend.data_cleaner import analyze_dataset
 from backend.profiler import profile_dataset
 from backend.filters import apply_filters
+from backend.metrics import generate_kpis
 
 from frontend.dashboard import render_dashboard
 from frontend.upload import render_upload_page
@@ -98,7 +99,7 @@ if uploaded_file is not None:
             len(df)
         )
 # -------------------------
-# KPI CARDS
+# Dataset Overview
 # -------------------------
 
 col1, col2, col3, col4 = st.columns(4)
@@ -120,7 +121,23 @@ with col4:
     st.metric("Missing Values", missing)
 
 st.divider()
+# -------------------------
+# Key Performance Indicators (KPIs)
+# -------------------------
+kpis = generate_kpis(df)
 
+if kpis:
+
+    st.subheader("📊 Key Performance Indicators")
+
+    cols = st.columns(min(4, len(kpis)))
+
+    for i, kpi in enumerate(kpis[:4]):
+        cols[i].metric(
+            label=kpi["title"],
+            value=f"{kpi['value']:,}"
+        )
+st.divider()
 # -------------------------
 # PAGE ROUTING
 # -------------------------
