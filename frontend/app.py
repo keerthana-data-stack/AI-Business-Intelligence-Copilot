@@ -3,6 +3,7 @@ import streamlit as st
 from backend.data_loader import load_dataset
 from backend.data_cleaner import analyze_dataset
 from backend.profiler import profile_dataset
+from backend.filters import apply_filters
 
 from frontend.dashboard import render_dashboard
 from frontend.upload import render_upload_page
@@ -67,6 +68,35 @@ if uploaded_file is not None:
     if df is not None:
         summary = analyze_dataset(df)
         profile = profile_dataset(df)
+        st.sidebar.subheader("🔍 Filters")
+
+        selected_filters = {}
+
+        for column in profile["categorical_columns"]:
+
+            # Skip columns with too many unique values
+            if df[column].nunique() <= 20:
+                options = sorted(df[column].dropna().unique())
+
+                selected_values = st.sidebar.multiselect(
+                    label=column,
+                    options=options
+                )
+
+                selected_filters[column] = selected_values
+        # Apply filters
+        df = apply_filters(df, selected_filters)
+
+        # Clear Filters Button
+        if st.sidebar.button("🗑️ Clear Filters"):
+            st.rerun()
+
+        # Show remaining rows
+        st.sidebar.markdown("---")
+        st.sidebar.metric(
+            "Rows after filtering",
+            len(df)
+        )
 # -------------------------
 # KPI CARDS
 # -------------------------
