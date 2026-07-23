@@ -6,6 +6,8 @@ from backend.profiler import profile_dataset
 from backend.filters import apply_filters
 from backend.metrics import generate_kpis
 from backend.quality import calculate_quality_score
+from backend.correlation import find_correlations
+from backend.insights import generate_insights
 
 from frontend.dashboard import render_dashboard
 from frontend.upload import render_upload_page
@@ -66,9 +68,10 @@ profile = None
 if uploaded_file is not None:
 
     df = load_dataset(uploaded_file)
-    original_df = df.copy()
+    
 
     if df is not None:
+        original_df = df.copy()
         summary = analyze_dataset(df)
         profile = profile_dataset(df)
         st.sidebar.subheader("🔍 Filters")
@@ -101,76 +104,116 @@ if uploaded_file is not None:
             len(df)
         )
 
-    quality = calculate_quality_score(original_df)
-    st.subheader("🛡️ Data Quality")
 
-    score = quality["score"]
+        # -------------------------
+        # Dataset Overview
+        # -------------------------
 
-    if score >= 90:
-        color = "🟢"
-    elif score >= 70:
-        color = "🟡"
-    else:
-        color = "🔴"
+        col1, col2, col3, col4 = st.columns(4)
 
-    st.metric(
-        label="Data Quality Score",
-        value=f"{color} {score}/100"
-    )
+        rows = summary["rows"] if summary else 0
+        columns = summary["columns"] if summary else 0
+        missing = summary["missing"] if summary else 0
 
-    col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Datasets", 1 if df is not None else 0)
 
-    with col1:
+        with col2:
+            st.metric("Rows", f"{rows:,}")
+
+        with col3:
+            st.metric("Columns", columns)
+
+        with col4:
+            st.metric("Missing Values", missing)
+
+        st.divider()
+        # -------------------------
+        # Key Performance Indicators (KPIs)
+        # -------------------------
+        kpis = generate_kpis(df)
+
+        if kpis:
+
+                st.subheader("📊 Key Performance Indicators")
+
+                cols = st.columns(min(4, len(kpis)))
+
+                for i, kpi in enumerate(kpis[:4]):
+                    cols[i].metric(
+                        label=kpi["title"],
+                        value=f"{kpi['value']:,}"
+                    )
+        st.divider()
+        # -------------------------
+        # DATA QUALITY SCORE
+        # -------------------------
+        quality = calculate_quality_score(original_df)
+        st.subheader("🛡️ Data Quality")
+
+        score = quality["score"]
+
+        if score >= 90:
+            color = "🟢"
+        elif score >= 70:
+            color = "🟡"
+        else:
+            color = "🔴"
+
         st.metric(
-            "Missing %",
-            f"{quality['missing_percent']}%"
+                label="Data Quality Score",
+                value=f"{color} {score}/100"
+            )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric(
+                    "Missing %",
+                    f"{quality['missing_percent']}%"
+                )
+
+        with col2:
+            st.metric(
+                    "Duplicate %",
+                    f"{quality['duplicate_percent']}%"
+                )
+
+        # -------------------------
+        # CORRELATION EXPLORER
+        # -------------------------
+        st.subheader("📈 Correlation Explorer")
+
+        Correlations = find_correlations(df)
+
+        if Correlations:
+
+            for item in Correlations[:5]:
+
+                corr = item["correlation"]
+
+                if corr > 0:
+                    st.success(
+                        f"{item['column1']} ↔ {item['column2']} : {corr}"
+                    )
+                else:
+                    st.warning(
+                        f"{item['column1']} ↔ {item['column2']} : {corr}"
+                    )
+
+        else:
+            st.info("No strong correlations found.")
+
+        insights = generate_insights(
+            df,
+            summary,
+            quality,
+            Correlations
         )
+        st.subheader("🧠 Executive Insights")
 
-    with col2:
-        st.metric(
-            "Duplicate %",
-            f"{quality['duplicate_percent']}%"
-        )
-# -------------------------
-# Dataset Overview
-# -------------------------
-
-col1, col2, col3, col4 = st.columns(4)
-
-rows = summary["rows"] if summary else 0
-columns = summary["columns"] if summary else 0
-missing = summary["missing"] if summary else 0
-
-with col1:
-    st.metric("Datasets", 1 if df is not None else 0)
-
-with col2:
-    st.metric("Rows", f"{rows:,}")
-
-with col3:
-    st.metric("Columns", columns)
-
-with col4:
-    st.metric("Missing Values", missing)
-
-st.divider()
-# -------------------------
-# Key Performance Indicators (KPIs)
-# -------------------------
-kpis = generate_kpis(df)
-
-if kpis:
-
-    st.subheader("📊 Key Performance Indicators")
-
-    cols = st.columns(min(4, len(kpis)))
-
-    for i, kpi in enumerate(kpis[:4]):
-        cols[i].metric(
-            label=kpi["title"],
-            value=f"{kpi['value']:,}"
-        )
-st.divider()
+        for insight in insights:
+            st.info(insight)
 # -------------------------
 # PAGE ROUTING
 # -------------------------
