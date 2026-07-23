@@ -1,13 +1,14 @@
-# Virtual environment
 venv/
-
-# Python cache
 __pycache__/
-*.py[cod]
+*.pyc
 
-# Streamlit
+.env
+
+data/
+outputs/
+
 .streamlit/
 
-# OS files
+.ipynb_checkpoints/
+
 .DS_Store
-Thumbs.db
