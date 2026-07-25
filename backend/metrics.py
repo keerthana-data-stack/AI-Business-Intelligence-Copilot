@@ -1,28 +1,42 @@
-import pandas as pd
+from backend.column_classifier import (
+    classify_columns,
+    MEASURE,
+    RATE
+)
 
 
 def generate_kpis(df):
     """
-    Generate KPI metrics from numeric columns.
+    Generate business-friendly KPIs based on column roles.
     """
 
-    numeric_columns = df.select_dtypes(include="number").columns.tolist()
-
-    if not numeric_columns:
-        return []
+    classification = classify_columns(df)
 
     kpis = []
 
-    for column in numeric_columns:
+    for column, role in classification.items():
 
-        kpis.append({
-            "title": f"Total {column}",
-            "value": round(df[column].sum(), 2)
-        })
+        # Business measures
+        if role == MEASURE:
 
-        kpis.append({
-            "title": f"Average {column}",
-            "value": round(df[column].mean(), 2)
-        })
+            kpis.append({
+                "title": f"Total {column}",
+                "value": round(df[column].sum(), 2)
+            })
+
+            # Quantity usually doesn't need an average KPI
+            if column.lower() != "quantity":
+                kpis.append({
+                    "title": f"Average {column}",
+                    "value": round(df[column].mean(), 2)
+                })
+
+        # Rates/percentages
+        elif role == RATE:
+
+            kpis.append({
+                "title": f"Average {column}",
+                "value": round(df[column].mean(), 2)
+            })
 
     return kpis

@@ -1,4 +1,5 @@
 import streamlit as st
+from frontend.ai_summary import render_ai_summary
 
 from backend.charts import (
     create_bar_chart,

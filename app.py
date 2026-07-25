@@ -11,12 +11,11 @@ from backend.insights import generate_insights
 
 from frontend.dashboard import render_dashboard
 from frontend.upload import render_upload_page
-from frontend.overview import render_overview
-from frontend.kpi import render_kpis
-from frontend.quality import render_quality
-from frontend.correlation_view import render_correlations
-from frontend.insights_view import render_insights
 from frontend.sidebar import render_sidebar
+from frontend.analytics import render_analytics_page
+from frontend.ai_assistant import render_ai_assistant
+from frontend.cleaning_view import render_cleaning_page
+
 # -------------------------
 # PAGE CONFIG
 # -------------------------
@@ -39,11 +38,12 @@ with st.sidebar:
     page = st.radio(
         "Go To",
         [
-            "Dashboard",
-            "Upload Data",
-            "AI Assistant",
-            "Forecasting",
-            "Settings"
+            "📊 Dashboard",
+            "📁 Upload Data",
+            "🤖 AI Assistant",
+            "🧹 Data Cleaning",
+            "📈 Forecasting",
+            "⚙️ Settings"
         ]
     )
 
@@ -60,6 +60,7 @@ st.divider()
 # FILE UPLOAD
 # -------------------------
 
+# Load and analyze dataset only if a file is uploaded
 uploaded_file = st.file_uploader(
     "Upload CSV or Excel",
     type=["csv", "xlsx"]
@@ -70,12 +71,20 @@ df = None
 summary = None
 profile = None
 
-# Load and analyze dataset only if a file is uploaded
 if uploaded_file is not None:
 
-    df = load_dataset(uploaded_file)
-    
+    file_bytes = uploaded_file.getvalue()
 
+    if (
+        "uploaded_file_bytes" not in st.session_state
+        or st.session_state.uploaded_file_bytes != file_bytes
+    ):
+
+        st.session_state.df = load_dataset(uploaded_file)
+        st.session_state.uploaded_file_bytes = file_bytes
+
+    df = st.session_state.df
+    
     if df is not None:
         original_df = df.copy()
         summary = analyze_dataset(df)
@@ -95,33 +104,52 @@ if uploaded_file is not None:
             correlations
         )
 
-        render_overview(df, summary)
-
-        render_kpis(kpis)
-
-        render_quality(quality)
-
-        render_correlations(correlations)
-
-        render_insights(insights)
 # -------------------------
 # PAGE ROUTING
 # -------------------------
 
-if page == "Dashboard":
+if page == "📊 Dashboard":
+
+    if df is None:
+        st.info("Upload a dataset first.")
+
+    else:
+       render_analytics_page(
+            df,
+            summary,
+            profile,
+            kpis,
+            quality,
+            correlations,
+            insights
+        )
+
     render_dashboard(df, profile)
 
-elif page == "Upload Data":
+elif page == "📁 Upload Data":
     render_upload_page(df, summary, profile)
 
-elif page == "AI Assistant":
-    st.header("🤖 AI Assistant")
-    st.info("Coming soon...")
+elif page == "🤖 AI Assistant":
+    if df is None:
+        st.info("Upload a dataset first.")
+    else:
+        render_ai_assistant(
+            df,
+            summary,
+            quality,
+            correlations
+        )
 
-elif page == "Forecasting":
+elif page == "🧹 Data Cleaning":
+    if df is None:
+        st.info("Upload a dataset first.")
+    else:
+        render_cleaning_page(df)
+
+elif page == "📈 Forecasting":
     st.header("📈 Forecasting")
     st.info("Coming soon...")
 
-elif page == "Settings":
+elif page == "⚙️ Settings":
     st.header("⚙️ Settings")
     st.info("Coming soon...")
