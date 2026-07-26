@@ -7,6 +7,10 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Banner](assets/banner.png)
 
+## 🚀Live Demo
+👉 **Launch AI Business Intelligence Copilot**
+https://ai-business-intelligence-copilot-gn2hysv7h4hasnl6mwjwta.streamlit.app 
+
 An AI-powered Business Intelligence platform built with **Python** and **Streamlit** that enables users to upload datasets, clean and analyze data, generate interactive dashboards, forecast future trends, and receive AI-generated business insights using natural language.
 
 ---
