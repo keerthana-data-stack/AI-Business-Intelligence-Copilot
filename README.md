@@ -68,7 +68,7 @@ Business analysts and decision-makers often work with multiple tools to clean da
 ```mermaid
 flowchart TD
 
-A[📂 Upload CSV / Excel]
+A[Upload CSV / Excel]
 --> B[Data Loader]
 
 B --> C[Data Summary]
