@@ -15,6 +15,9 @@ from frontend.sidebar import render_sidebar
 from frontend.analytics import render_analytics_page
 from frontend.ai_assistant import render_ai_assistant
 from frontend.cleaning_view import render_cleaning_page
+from frontend.forecasting_view import render_forecasting_page
+from frontend.settings import render_settings_page
+from frontend.about import render_about_page
 
 # -------------------------
 # PAGE CONFIG
@@ -39,11 +42,12 @@ with st.sidebar:
         "Go To",
         [
             "📊 Dashboard",
-            "📁 Upload Data",
-            "🤖 AI Assistant",
+            "📁 Analytics",
             "🧹 Data Cleaning",
             "📈 Forecasting",
-            "⚙️ Settings"
+            "🤖 AI Assistant",
+            "⚙️ Settings",
+            "ℹ️ About"
         ]
     )
 
@@ -80,11 +84,16 @@ if uploaded_file is not None:
         or st.session_state.uploaded_file_bytes != file_bytes
     ):
 
-        st.session_state.df = load_dataset(uploaded_file)
-        st.session_state.uploaded_file_bytes = file_bytes
+        try:
+            st.session_state.df = load_dataset(uploaded_file)
+            st.session_state.uploaded_file_bytes = file_bytes
+
+        except Exception as e:
+            st.error(f"Unable to load dataset.\n\n{e}")
+            st.session_state.df = None
 
     df = st.session_state.df
-    
+
     if df is not None:
         original_df = df.copy()
         summary = analyze_dataset(df)
@@ -113,6 +122,9 @@ if page == "📊 Dashboard":
     if df is None:
         st.info("Upload a dataset first.")
 
+    elif df.empty:
+        st.warning("The uploaded dataset is empty.")
+
     else:
        render_analytics_page(
             df,
@@ -126,7 +138,7 @@ if page == "📊 Dashboard":
 
     render_dashboard(df, profile)
 
-elif page == "📁 Upload Data":
+elif page == "📁 Analytics":
     render_upload_page(df, summary, profile)
 
 elif page == "🤖 AI Assistant":
@@ -147,9 +159,13 @@ elif page == "🧹 Data Cleaning":
         render_cleaning_page(df)
 
 elif page == "📈 Forecasting":
-    st.header("📈 Forecasting")
-    st.info("Coming soon...")
+    if df is None:
+        st.info("Upload a dataset first.")
+    else:
+        render_forecasting_page(df)
 
 elif page == "⚙️ Settings":
-    st.header("⚙️ Settings")
-    st.info("Coming soon...")
+    render_settings_page(df)
+
+elif page == "ℹ️ About":
+    render_about_page()

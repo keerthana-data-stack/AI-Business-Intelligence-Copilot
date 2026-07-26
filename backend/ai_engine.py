@@ -93,3 +93,49 @@ def ask_ai(context, question):
     )
 
     return message.content[0].text
+
+def build_forecast_context(metrics, periods, frequency_label):
+    """
+    Builds context for the AI forecast summary.
+    """
+
+    return f"""
+Historical Average: {metrics['Historical Average']}
+
+Forecast Average: {metrics['Forecast Average']}
+
+Expected Growth: {metrics['Growth (%)']}%
+
+Forecast Horizon: {periods} {frequency_label.lower()}
+"""
+
+def build_forecast_prompt(context):
+    return f"""
+You are a business analyst.
+
+Based on the forecast metrics below, write a short executive summary.
+
+Requirements:
+- 3 to 5 sentences
+- Professional tone
+- Mention whether the forecast indicates growth or decline
+- Mention the forecast horizon
+- Do not make up numbers
+- Keep it concise
+
+Forecast Information:
+
+{context}
+"""
+
+def generate_forecast_summary(metrics, periods, frequency_label):
+
+    context = build_forecast_context(
+        metrics,
+        periods,
+        frequency_label
+    )
+
+    prompt = build_forecast_prompt(context)
+
+    return ask_ai("", prompt)

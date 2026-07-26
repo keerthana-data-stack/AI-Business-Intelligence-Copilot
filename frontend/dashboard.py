@@ -20,7 +20,11 @@ def render_dashboard(df, profile):
     st.header("📊 Business Dashboard")
 
     if df is None:
-        st.info("Upload a dataset first.")
+        st.info("Please upload a dataset.")
+        return
+
+    if df.empty:
+        st.warning("The uploaded dataset is empty.")
         return
 
     chart_type = st.selectbox(
@@ -53,28 +57,32 @@ def render_dashboard(df, profile):
 
     st.success(f"💡 Recommended Chart: {recommended}")
 
-    if chart_type == "Bar":
+    try:
+        if chart_type == "Bar":
 
-        fig = create_bar_chart(df, x_column, y_column)
+            fig = create_bar_chart(df, x_column, y_column)
 
-    elif chart_type == "Line":
+        elif chart_type == "Line":
 
-        fig = create_line_chart(df, x_column, y_column)
+            fig = create_line_chart(df, x_column, y_column)
 
-    elif chart_type == "Scatter":
+        elif chart_type == "Scatter":
 
-        fig = create_scatter_chart(df, x_column, y_column)
+            fig = create_scatter_chart(df, x_column, y_column)
 
-    elif chart_type == "Histogram":
+        elif chart_type == "Histogram":
 
-        fig = create_histogram(df, y_column)
+            fig = create_histogram(df, y_column)
 
-    elif chart_type == "Box Plot":
+        elif chart_type == "Box Plot":
 
-        fig = create_box_plot(df, y_column)
+            fig = create_box_plot(df, y_column)
 
-    else:
+        else:
 
-        fig = create_pie_chart(df, x_column, y_column)
+            fig = create_pie_chart(df, x_column, y_column)
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Unable to generate visualization.\n\n{e}")

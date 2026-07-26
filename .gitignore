@@ -1,16 +1,26 @@
-.env
-.venv/
-venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 
+# Virtual environments
+venv/
+.venv/
+
+# Environment variables
 .env
 
-data/
-outputs/
-
-.streamlit/
-
+# Jupyter
 .ipynb_checkpoints/
 
+# VS Code
+.vscode/
+
+# macOS
 .DS_Store
+
+# Output files (optional)
+outputs/*.csv
+outputs/*.xlsx
+
+.streamlit/

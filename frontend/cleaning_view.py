@@ -55,14 +55,18 @@ def render_cleaning_page(df):
         value = st.text_input("Constant Value")
     if st.button("Fill Missing Values"):
 
-        st.session_state.df = fill_missing_values(
-            st.session_state.df,
-            column,
-            method,
-            value
-        )
+        try:
+            st.session_state.df = fill_missing_values(
+                st.session_state.df,
+                column,
+                method,
+                value
+            )
 
-        st.success("Missing values filled.")
+            st.success("Missing values filled.")
+
+        except Exception as e:
+            st.error(f"Unable to fill missing values.\n\n{e}")
 
     st.divider()
 
@@ -70,13 +74,17 @@ def render_cleaning_page(df):
 
     if st.button("Remove Duplicates"):
 
-        cleaned_df, removed = remove_duplicates(
-            st.session_state.df
-        )
+        try:
+            cleaned_df, removed = remove_duplicates(
+                st.session_state.df
+            )
 
-        st.session_state.df = cleaned_df
+            st.session_state.df = cleaned_df
 
-        st.success(f"Removed {removed} duplicate rows.")
+            st.success(f"Removed {removed} duplicate rows.")
+
+        except Exception as e:
+            st.error(f"Unable to remove duplicates.\n\n{e}")
 
     st.divider()
 
@@ -95,13 +103,17 @@ def render_cleaning_page(df):
 
     if st.button("Rename Column"):
 
-        st.session_state.df = rename_column(
-            st.session_state.df,
-            old_name,
-            new_name
-        )
+        try:
+            st.session_state.df = rename_column(
+                st.session_state.df,
+                old_name,
+                new_name
+            )
 
-        st.success("Column renamed successfully.")
+            st.success("Column renamed successfully.")
+
+        except Exception as e:
+            st.error(f"Unable to rename column.\n\n{e}")
 
     st.divider()
 
@@ -121,13 +133,17 @@ def render_cleaning_page(df):
 
     if st.button("Convert Data Type"):
 
-        st.session_state.df = convert_dtype(
-            st.session_state.df,
-            dtype_column,
-            dtype
-        )
+        try:
+            st.session_state.df = convert_dtype(
+                st.session_state.df,
+                dtype_column,
+                dtype
+            )
 
-        st.success("Data type updated.")
+            st.success("Data type updated.")
+
+        except Exception as e:
+            st.error(f"Unable to convert data type.\n\n{e}")
 
     st.divider()
 
@@ -141,16 +157,20 @@ def render_cleaning_page(df):
 
     if st.button("Drop Column"):
 
-        cleaned_df, success = drop_column(
-            st.session_state.df,
-            drop_col
-        )
+        try:
+            cleaned_df, success = drop_column(
+                st.session_state.df,
+                drop_col
+            )
 
-        if success:
-            st.session_state.df = cleaned_df
-            st.success(f"{drop_col} removed successfully.")
-        else:
-            st.error("Column not found.")
+            if success:
+                st.session_state.df = cleaned_df
+                st.success(f"{drop_col} removed successfully.")
+            else:
+                st.error("Column not found.")
+
+        except Exception as e:
+            st.error(f"Unable to drop column.\n\n{e}")
 
     st.divider()
 

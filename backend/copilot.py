@@ -30,7 +30,11 @@ def process_question(
         correlations
     )
 
-    return ask_ai(
-        context,
-        question
-    )
+    try:
+        return ask_ai(
+            context,
+            question
+        )
+
+    except Exception as e:
+        return f"Unable to contact the AI service.\n\n{e}"

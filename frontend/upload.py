@@ -6,7 +6,7 @@ def render_upload_page(df, summary, profile):
     Renders the upload and data profiling page.
     """
 
-    st.header("📁 Upload & Data Profile")
+    st.header("📁 Analytics & Data Profile")
 
     if df is None:
         st.info("Upload a dataset to begin.")
